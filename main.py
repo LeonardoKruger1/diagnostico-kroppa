@@ -65,7 +65,7 @@ col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     # Verificação para evitar erro se o arquivo não existir localmente
     if os.path.exists("logo_kroppa.png"):
-        st.image("logo_kroppa.png", use_container_width=True)
+       st.image("logo_kroppa.png", width="stretch")
     else:
         st.warning("⚠️ Arquivo 'logo_kroppa.png' não encontrado. Suba o arquivo para ver a logo.")
 
@@ -85,7 +85,7 @@ if st.session_state.passo == 1:
     st.markdown("### 📸 Passo 1: O que está acontecendo?")
     foto = st.file_uploader("Envie uma foto bem nítida da parte afetada da planta", type=["jpg", "jpeg", "png"])
     if foto:
-        st.image(foto, caption="Imagem recebida! Nossos agrônomos estão analisando...", use_container_width=True)
+        st.image(foto, caption="Imagem recebida! Nossos agrônomos estão analisando...", use_container_width="stretch")
         col_btn1, col_btn2 = st.columns([1,1])
         with col_btn2:
             if st.button("Continuar para identificação →"):

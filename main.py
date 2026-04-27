@@ -5,14 +5,24 @@ from PIL import Image
 
 # --- CONFIGURAÇÃO DA INTELIGÊNCIA ---
 try:
-    # Busca a chave nos Secrets do Streamlit
     api_key = st.secrets["GEMINI_API_KEY"]
     genai.configure(api_key=api_key)
     
-    # Usando o nome completo do modelo para evitar o erro 404
-    model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
+    # Lógica para encontrar o modelo Flash disponível
+    model_name = 'gemini-1.5-flash' # Padrão
+    try:
+        # Tenta listar os modelos para ver qual o nome correto nesta versão da API
+        models = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+        # Se encontrar o flash na lista, usa o nome exato da lista
+        flash_models = [m for m in models if 'flash' in m]
+        if flash_models:
+            model_name = flash_models[0]
+    except:
+        pass # Se não conseguir listar, mantém o padrão e tenta a sorte
+        
+    model = genai.GenerativeModel(model_name)
 except Exception as e:
-    st.error(f"Erro de Configuração: {e}")
+    st.error(f"Erro Crítico de Configuração: {e}")
 
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="KROPPA DOCTOR - Agro", page_icon="🌿")

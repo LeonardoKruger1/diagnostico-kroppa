@@ -13,7 +13,7 @@ def analisar_planta(image_file):
     img_data = base64.b64encode(image_file.getvalue()).decode("utf-8")
     
     # URL ATUALIZADA PARA GEMINI 2.0 FLASH-LITE
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={API_KEY}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={API_KEY}"
     
     headers = {'Content-Type': 'application/json'}
     

@@ -12,16 +12,21 @@ API_KEY = st.secrets.get("GEMINI_API_KEY")
 def analisar_planta(image_file):
     img_data = base64.b64encode(image_file.getvalue()).decode("utf-8")
     
-    # URL v1beta com o nome de modelo que MAIS TEM FUNCIONADO globalmente hoje
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={API_KEY}"
+    # URL ATUALIZADA PARA GEMINI 2.0 FLASH-LITE
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key={API_KEY}"
     
     headers = {'Content-Type': 'application/json'}
     
     payload = {
         "contents": [{
             "parts": [
-                {"text": "Aja como um Engenheiro Agrônomo. Identifique o problema na planta desta imagem e sugira o manejo técnico."},
-                {"inline_data": {"mime_type": "image/jpeg", "data": img_data}}
+                {"text": "Aja como um Engenheiro Agrônomo sênior. Analise esta imagem, identifique o problema fitossanitário e sugira o manejo."},
+                {
+                    "inline_data": {
+                        "mime_type": "image/jpeg", 
+                        "data": img_data
+                    }
+                }
             ]
         }]
     }
@@ -33,11 +38,10 @@ def analisar_planta(image_file):
         if response.status_code == 200:
             return res_json['candidates'][0]['content']['parts'][0]['text']
         else:
-            # Se o 1.5 Flash falhar, tentamos o Pro Vision automaticamente no erro
-            return f"Erro Crítico (404): O modelo ainda não está disponível na sua região. Tente novamente em instantes."
+            # Caso o 2.0 Lite ainda precise de algo, o erro aparecerá aqui de forma clara
+            return f"Erro na análise: {res_json.get('error', {}).get('message', 'Erro desconhecido')}"
     except Exception as e:
-        return f"Erro de conexão: {str(e)}"
-# --- INTERFACE ---
+        return f"Falha na conexão: {str(e)}"# --- INTERFACE ---
 if os.path.exists("logo_kroppa.png"):
     st.image("logo_kroppa.png", width=150)
 st.title("Doutor Planta Kroppa")

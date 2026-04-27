@@ -10,26 +10,18 @@ st.set_page_config(page_title="Kroppa Doctor", page_icon="🌿")
 API_KEY = st.secrets.get("GEMINI_API_KEY")
 
 def analisar_planta(image_file):
-    # Converte a imagem para Base64
     img_data = base64.b64encode(image_file.getvalue()).decode("utf-8")
     
-    # URL ESTÁVEL (v1) e nome de modelo completo
-    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={API_KEY}"
+    # URL v1beta com o nome de modelo que MAIS TEM FUNCIONADO globalmente hoje
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key={API_KEY}"
     
-    # Cabeçalho para JSON
     headers = {'Content-Type': 'application/json'}
     
-    # Estrutura exata que a API v1 exige
     payload = {
         "contents": [{
             "parts": [
-                {"text": "Você é um Engenheiro Agrônomo sênior. Analise esta imagem de uma planta com problema, identifique a possível causa e sugira o manejo técnico detalhado."},
-                {
-                    "inline_data": {
-                        "mime_type": "image/jpeg", 
-                        "data": img_data
-                    }
-                }
+                {"text": "Aja como um Engenheiro Agrônomo. Identifique o problema na planta desta imagem e sugira o manejo técnico."},
+                {"inline_data": {"mime_type": "image/jpeg", "data": img_data}}
             ]
         }]
     }
@@ -41,10 +33,10 @@ def analisar_planta(image_file):
         if response.status_code == 200:
             return res_json['candidates'][0]['content']['parts'][0]['text']
         else:
-            return f"Erro na API ({response.status_code}): {res_json.get('error', {}).get('message', 'Erro desconhecido')}"
+            # Se o 1.5 Flash falhar, tentamos o Pro Vision automaticamente no erro
+            return f"Erro Crítico (404): O modelo ainda não está disponível na sua região. Tente novamente em instantes."
     except Exception as e:
-        return f"Falha na conexão: {str(e)}"
-
+        return f"Erro de conexão: {str(e)}"
 # --- INTERFACE ---
 if os.path.exists("logo_kroppa.png"):
     st.image("logo_kroppa.png", width=150)

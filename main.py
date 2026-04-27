@@ -7,10 +7,13 @@ from PIL import Image
 # Busca a chave nos Secrets do Streamlit
 try:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-    model = genai.GenerativeModel('gemini-pro-vision')
-except:
-    st.error("Erro: Chave de API não configurada nos Secrets.")
-
+    # Tentando o Flash, se falhar, tenta o Pro
+    try:
+        model = genai.GenerativeModel('gemini-1.5-flash')
+    except:
+        model = genai.GenerativeModel('gemini-pro-vision')
+except Exception as e:
+    st.error(f"Erro na configuração da IA: {e}")
 # --- CONFIGURAÇÃO DA PÁGINA ---
 st.set_page_config(page_title="KROPPA DOCTOR - Kroppa Agro", page_icon="🌿")
 

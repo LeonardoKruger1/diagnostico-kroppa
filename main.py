@@ -7,7 +7,7 @@ from PIL import Image
 # Busca a chave nos Secrets do Streamlit
 try:
     genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-pro-vision')
 except:
     st.error("Erro: Chave de API não configurada nos Secrets.")
 

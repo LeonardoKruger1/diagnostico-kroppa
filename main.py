@@ -4,25 +4,25 @@ import google.generativeai as genai
 from PIL import Image
 
 # --- CONFIGURAÇÃO DA INTELIGÊNCIA ---
-# Busca a chave nos Secrets do Streamlit
 try:
-    genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-    # Tentando o Flash, se falhar, tenta o Pro
-    try:
-        model = genai.GenerativeModel('gemini-1.5-flash')
-    except:
-        model = genai.GenerativeModel('gemini-pro-vision')
+    # Busca a chave nos Secrets do Streamlit
+    api_key = st.secrets["GEMINI_API_KEY"]
+    genai.configure(api_key=api_key)
+    
+    # Usando o nome completo do modelo para evitar o erro 404
+    model = genai.GenerativeModel('models/gemini-1.5-flash-latest')
 except Exception as e:
-    st.error(f"Erro na configuração da IA: {e}")
+    st.error(f"Erro de Configuração: {e}")
+
 # --- CONFIGURAÇÃO DA PÁGINA ---
-st.set_page_config(page_title="KROPPA DOCTOR - Kroppa Agro", page_icon="🌿")
+st.set_page_config(page_title="KROPPA DOCTOR - Agro", page_icon="🌿")
 
 # Estilo Kroppa
 st.markdown("""
     <style>
     .stApp { background-color: #FDFDFD; }
-    .stButton>button { background-color: #A3B948; color: white; width: 100%; border-radius: 20px; font-weight: bold; }
-    .diagnostico-box { background-color: #f0f4e8; border-left: 5px solid #A3B948; padding: 20px; border-radius: 10px; }
+    .stButton>button { background-color: #A3B948; color: white; width: 100%; border-radius: 20px; font-weight: bold; height: 3em;}
+    .diagnostico-box { background-color: #f0f4e8; border-left: 5px solid #A3B948; padding: 20px; border-radius: 10px; color: #333; }
     </style>
     """, unsafe_allow_html=True)
 
@@ -30,11 +30,13 @@ if 'passo' not in st.session_state:
     st.session_state.passo = 1
     st.session_state.dados = {}
 
+# --- CABEÇALHO ---
+if os.path.exists("logo_kroppa.png"):
+    st.image("logo_kroppa.png", width=200)
+
 # --- FLUXO ---
 
 if st.session_state.passo == 1:
-    if os.path.exists("logo_kroppa.png"):
-        st.image("logo_kroppa.png", width=200)
     st.title("Doutor Planta")
     st.subheader("Análise Agronômica em Tempo Real")
     
@@ -62,28 +64,27 @@ elif st.session_state.passo == 3:
     st.header("📋 Laudo Técnico Kroppa")
     
     with st.spinner("Analisando tecidos vegetais e histórico..."):
-        # Preparando o Prompt para a IA
-        img = Image.open(st.session_state.foto)
-        prompt = f"""
-        Aja como um Engenheiro Agrônomo especialista em fitossanidade. 
-        Analise a imagem e os dados: 
-        Planta: {st.session_state.dados['nome']}
-        Manejo: Rega {st.session_state.dados['rega']}, Luz {st.session_state.dados['luz']}, Adubação: {st.session_state.dados['adubo']}.
-        
-        Forneça um laudo estruturado:
-        1. Identificação do Problema (Doença, Praga ou Distúrbio Fisiológico).
-        2. Causa provável baseada no manejo relatado.
-        3. Prescrição Técnica (O que fazer agora).
-        4. Recomendação de Produto (Indique um tipo de insumo ou nutriente).
-        Use um tom profissional, direto e prático.
-        """
-        
-        response = model.generate_content([prompt, img])
-        
-        st.markdown(f"<div class='diagnostico-box'>{response.text}</div>", unsafe_allow_html=True)
-        
-    st.write("---")
-    st.warning("⚠️ Este é um diagnóstico assistido por IA. Para decisões em larga escala, consulte um agrônomo presencialmente.")
+        try:
+            img = Image.open(st.session_state.foto)
+            prompt = f"""
+            Aja como um Engenheiro Agrônomo especialista em fitossanidade. 
+            Analise a imagem e os dados: 
+            Planta: {st.session_state.dados['nome']}
+            Manejo: Rega {st.session_state.dados['rega']}, Luz {st.session_state.dados['luz']}, Adubação: {st.session_state.dados['adubo']}.
+            
+            Forneça um laudo estruturado:
+            1. Identificação do Problema.
+            2. Causa provável.
+            3. Prescrição Técnica.
+            4. Sugestão de Insumo/Nutriente.
+            """
+            
+            response = model.generate_content([prompt, img])
+            st.markdown(f"<div class='diagnostico-box'>{response.text}</div>", unsafe_allow_html=True)
+            
+        except Exception as e:
+            st.error(f"Erro ao gerar diagnóstico: {e}")
+            st.info("Verifique se sua API Key no AI Studio tem permissão para o modelo Gemini 1.5 Flash.")
     
     if st.button("Nova Consulta"):
         st.session_state.passo = 1
